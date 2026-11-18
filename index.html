@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#020108">
+<title>Sen uchun ✨</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body { background: #020108; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; touch-action: none; }
+canvas { position: fixed; inset: 0; z-index: 1; }
+
+/* Markazdagi she'riy satrlar */
+#line {
+    position: fixed; z-index: 10; left: 0; right: 0; top: 50%;
+    transform: translateY(-50%) scale(.98);
+    padding: 0 8%; text-align: center;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic; font-weight: 500;
+    font-size: clamp(26px, 7vw, 44px); line-height: 1.35;
+    color: #e8f2ff;
+    text-shadow: 0 0 25px rgba(125,211,252,.6), 0 0 60px rgba(168,85,247,.4), 0 2px 12px #000;
+    opacity: 0; transition: opacity 1.4s ease, transform 2s ease;
+    pointer-events: none;
+}
+#line.show { opacity: 1; transform: translateY(-50%) scale(1); }
+
+/* Sarlavha */
+.header-box {
+    position: fixed; z-index: 10; top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 52px); left: 0; right: 0;
+    text-align: center; padding: 0 16px; pointer-events: none;
+    opacity: 0; transition: opacity 2s ease;
+}
+.header-box.show { opacity: 1; }
+.title {
+    /* Sarlavha yulduzlar bilan chiziladi (buildTitle); bu element faqat joy egallaydi */
+    font-family: 'Great Vibes', 'Snell Roundhand', 'Brush Script MT', cursive; font-weight: 400;
+    font-size: clamp(34px, 9vw, 64px);
+    color: transparent; visibility: hidden;
+    line-height: 1.3; margin-bottom: 8px;
+}
+.subtitle { display: none; min-height: 1.5em; font-size: clamp(12px, 3vw, 15px); color: #cfe8ff; font-weight: 300; letter-spacing: 1px; animation: pulse 2.4s infinite; text-shadow: 0 1px 8px #000; }
+
+/* Yakuniy xat */
+.card {
+    position: fixed; z-index: 10; left: 50%; bottom: max(56px, 6%);
+    width: 92%; max-width: 560px;
+    transform: translate(-50%, 25px);
+    background: rgba(6,8,26,.55);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    border: 1px solid rgba(240,171,252,.28);
+    border-radius: 22px; padding: 18px 22px 16px;
+    box-shadow: 0 15px 45px rgba(0,0,0,.8), 0 0 40px rgba(192,132,252,.18);
+    opacity: 0; transition: opacity 1.4s ease, transform 1.4s cubic-bezier(.22,1,.36,1);
+    pointer-events: none;
+}
+.card.visible { opacity: 1; transform: translate(-50%, 0); }
+.message {
+    font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-weight: 500;
+    font-size: clamp(14px, min(4.3vw, 2.5vh), 21px); line-height: 1.5; color: #fdf4ff;
+    white-space: pre-line; min-height: 120px;
+}
+.counter {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.12);
+    font-size: clamp(11px, 3vw, 13px); letter-spacing: 1.2px; text-transform: uppercase;
+    color: #fbcfe8; text-align: center; opacity: 0; transition: opacity 1.5s ease;
+}
+.counter.show { opacity: 1; }
+.counter b { font-size: 1.5em; color: #fff; letter-spacing: 0; font-family: 'Cinzel', serif; }
+
+/* Kirish ekrani */
+#intro {
+    position: fixed; inset: 0; z-index: 30;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 22px; text-align: center; padding: 0 10%;
+    background: radial-gradient(ellipse at center, rgba(20,8,50,.25), rgba(2,1,8,.8) 75%);
+    transition: opacity 1.6s ease; cursor: pointer;
+}
+#intro.hide { opacity: 0; pointer-events: none; }
+#intro h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-weight: 500;
+    font-size: clamp(28px, 7.5vw, 46px); line-height: 1.3; color: #f5e9ff; white-space: pre-line;
+    text-shadow: 0 0 30px rgba(192,132,252,.6), 0 2px 14px #000;
+}
+#startBtn {
+    background: linear-gradient(135deg, rgba(125,211,252,.25), rgba(240,171,252,.25));
+    border: 1px solid rgba(255,255,255,.4); color: #fff;
+    padding: 14px 34px; border-radius: 40px; font-size: 16px; letter-spacing: 2px;
+    font-family: inherit; cursor: pointer; animation: glow 2.2s ease-in-out infinite;
+}
+.hint { font-size: 12px; color: #b8c4ff; letter-spacing: 1px; font-weight: 300; text-shadow: 0 1px 8px #000; }
+
+/* Boshqaruv tugmalari */
+.pill {
+    position: fixed; z-index: 20;
+    background: rgba(56,189,248,.12); border: 1px solid rgba(125,211,252,.3);
+    color: #e0f2fe; padding: 7px 14px; border-radius: 20px; font-size: 12px;
+    cursor: pointer; transition: .3s; font-family: inherit;
+}
+.pill:hover { background: rgba(56,189,248,.3); color: #fff; }
+#actions {
+    position: fixed; z-index: 20; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity 1s; white-space: nowrap;
+}
+#actions.show { opacity: .9; pointer-events: auto; }
+#actions .pill { position: static; }
+.pickInline {
+    display: inline-block; cursor: pointer; padding: 9px 18px; border-radius: 24px; font-size: 13px; letter-spacing: .5px;
+    color: #e0f2fe; background: rgba(56,189,248,.12); border: 1px solid rgba(125,211,252,.35);
+}
+.pickInline:hover { background: rgba(56,189,248,.3); color: #fff; }
+input[type="file"] { display: none; }
+body.clean #actions { display: none; }
+
+/* Past ekranli telefonlar: karta ixchamroq */
+@media (max-height: 680px) {
+    .card { padding: 12px 16px 10px; border-radius: 18px; }
+    .message { font-size: 13px; line-height: 1.36; }
+    .counter { margin-top: 6px; padding-top: 6px; }
+}
+
+/* Yotiq ekran (telefon yotqizilganda, planshet, kompyuter): portret chapda, matn o'ngda */
+@media (min-aspect-ratio: 23/20) {
+    .header-box { left: 50%; top: 5%; bottom: auto; }
+    .title { margin-bottom: 4px; }
+    .subtitle { font-size: clamp(11px, min(1.6vw, 3.4vh), 15px); }
+    .card { left: auto; right: 3%; bottom: auto; top: 58%; width: 44%; max-width: none; transform: translateY(calc(-50% + 25px)); }
+    .card.visible { transform: translateY(-50%); }
+    .message { min-height: 0; font-size: clamp(14px, min(2.4vw, 3.6vh), 22px); }
+    #line { font-size: clamp(22px, min(5vw, 9vh), 44px); }
+}
+
+@keyframes shine { to { background-position: 200% center; } }
+@keyframes pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+@keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(192,132,252,.35); } 50% { box-shadow: 0 0 45px rgba(125,211,252,.7); } }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="line"></div>
+
+<div class="header-box" id="header">
+    <div class="title" id="mainTitle"></div>
+    <div class="subtitle" id="subTitle"></div>
+</div>
+
+<div class="card" id="msgCard">
+    <div class="message" id="typewriter"></div>
+    <div class="counter" id="counter"></div>
+</div>
+
+<div id="intro">
+    <h1 id="introTitle"></h1>
+    <button id="startBtn">OCHISH ✨</button>
+    
+    <label class="pickInline" for="fileInput">📷 O'z rasmingni tanla</label>
+</div>
+
+<input type="file" id="fileInput" accept="image/*">
+<div id="actions">
+    <button class="pill" id="replay">↻ Qayta ko'rish</button>
+    <label class="pill" for="fileInput">📷 Boshqa rasm</label>
+</div>
+
+<script>
+// ==================================================================
+//  SOZLAMALAR — faqat shu qismni o'zgartiring
+// ==================================================================
+const CONFIG = {
+    ism: "Yulduzim",              // <-- uning ismi
+    rasm: "rasm.png",           // <-- uning rasmi (kod yoniga qo'ying)
+    sana: "",                     // <-- birga bo'lgan sana, masalan "2025-02-14". Bo'sh qolsa hisoblagich chiqmaydi
+    musiqa: "",                   // <-- tanlagan qo'shig'ingiz, masalan "musiqa.mp3" (shu papkaga qo'ying)
+    fonniOlibTashlash: true,      // <-- rasm foni yulduz bo'lib chiqmasin (faqat yuzning o'zi). Noto'g'ri ishlasa false qiling
+    portretYorqinligi: 1.05,      // <-- yulduz portret yorqinligi (0.6 – 1.3). Kamaytirsangiz yumshoqroq bo'ladi
+    portretKattaligi: 1.15,       // <-- portret kattaligi (ekran kengligiga nisbatan; 1.0 = ekran kengligi, 1.3 = yelkalari chetdan kesiladi)
+    hajm3D: 0,                    // <-- yuzning "bo'rtib chiqishi" (0 = yassi, tavsiya etiladi)
+    yorugTezligi: 0.5,            // <-- yorug'lik tezligida uchish tezligi (0 = o'chiq, 0.5 = mayin, 0.8 = tezroq)
+
+    kirish: "",
+
+    satrlar: [
+        "Koinotda sanoqsiz yulduz bor…",
+        "Ularning har biri o'z chiroyiga ega.",
+        "Lekin men hayotimda bitta yulduzni tanladim.",
+        "Va u ..."
+    ],
+
+    xat: "",
+};
+// ==================================================================
+
+const ISM = CONFIG.ism;
+const sub = s => s.replaceAll('{ISM}', ISM.toUpperCase()).replaceAll('{ism}', ISM);
+const isMobile = Math.min(innerWidth, innerHeight) < 700;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const MAX_PARTICLES = isMobile ? 8000 : 15000;
+
+// 3D sahna o'lchamlari
+const F = 800;                  // fokus masofasi
+const ZP = F;                   // portret tekisligigacha masofa
+const Z_FAR = 2600, Z_NEAR = 60;
+const TAIL = 900;               // warp paytida yulduz izi uzunligi
+
+if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean');
+
+const $ = id => document.getElementById(id);
+$('introTitle').innerText = sub(CONFIG.kirish);
+
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, CXs, CYs;
+function sizeCanvas() {
+    W = innerWidth; H = innerHeight; CXs = W / 2; CYs = H / 2;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+sizeCanvas();
+
+let particles = [], bgStars = [], ring = [], bokeh = [], twinklers = [], shooters = [];
+let ringC = { x: 0, y: 0, r: 100 }, ringK = 0;
+let assemble = false, assembleStart = 0, sparklesOn = false, shimmerOn = false;
+let glowK = 0;
+let WARP = 0, warpTarget = 0;
+let nebPhase = 0;
+let ptr = { x: 0.5, y: 0.5, active: false };
+let camYaw = 0, camPitch = 0;
+let loadedImg = null, nebulaCanvas = null;
+let portraitRect = { x: 0, y: 0, w: 1, h: 1 };
+let titleStars = [], titleOn = false, titleStart = 0;
+
+// ------------------------------------------------------------------
+//  Yulduz teksturalari
+// ------------------------------------------------------------------
+function createStarSprite(r, g, b, spikes = false, crisp = false) {
+    const size = spikes ? 64 : 32, half = size / 2;
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const s = c.getContext('2d');
+    const grad = s.createRadialGradient(half, half, 0, half, half, half);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    if (crisp) {
+        grad.addColorStop(0.18, `rgba(${Math.min(255, r + 60)},${Math.min(255, g + 60)},${Math.min(255, b + 60)},0.95)`);
+        grad.addColorStop(0.42, `rgba(${r},${g},${b},0.22)`);
+        grad.addColorStop(0.7, `rgba(${r},${g},${b},0)`);
+    } else {
+        grad.addColorStop(0.15, `rgba(${Math.min(255, r + 60)},${Math.min(255, g + 60)},${Math.min(255, b + 60)},0.9)`);
+        grad.addColorStop(0.4, `rgba(${r},${g},${b},0.35)`);
+    }
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    s.fillStyle = grad;
+    s.beginPath(); s.arc(half, half, half, 0, Math.PI * 2); s.fill();
+    if (spikes) {
+        s.save(); s.translate(half, half);
+        for (let i = 0; i < 2; i++) {
+            const sg = s.createLinearGradient(-half, 0, half, 0);
+            sg.addColorStop(0, `rgba(${r},${g},${b},0)`);
+            sg.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+            sg.addColorStop(1, `rgba(${r},${g},${b},0)`);
+            s.fillStyle = sg;
+            s.fillRect(-half, -0.9, size, 1.8);
+            s.rotate(Math.PI / 2);
+        }
+        s.restore();
+    }
+    return c;
+}
+function createBokehSprite(r, g, b) {
+    const size = 96, half = size / 2;
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const s = c.getContext('2d');
+    const grad = s.createRadialGradient(half, half, 0, half, half, half);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.55)`);
+    grad.addColorStop(0.7, `rgba(${r},${g},${b},0.35)`);
+    grad.addColorStop(0.92, `rgba(${r},${g},${b},0.6)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    s.fillStyle = grad;
+    s.beginPath(); s.arc(half, half, half, 0, Math.PI * 2); s.fill();
+    return c;
+}
+
+const SP = {
+    iceBlue: createStarSprite(96, 190, 250),
+    deepBlue: createStarSprite(70, 120, 246),
+    violet: createStarSprite(168, 100, 250),
+    warmGold: createStarSprite(251, 200, 90),
+    pureWhite: createStarSprite(224, 238, 255),
+    pink: createStarSprite(244, 130, 190),
+    sparkleCyan: createStarSprite(100, 200, 250, true),
+    sparkleGold: createStarSprite(253, 224, 110, true),
+    sparklePink: createStarSprite(249, 168, 212, true),
+    sparkleWhite: createStarSprite(230, 240, 255, true)
+};
+const SPC = {
+    iceBlue: createStarSprite(96, 190, 250, false, true),
+    deepBlue: createStarSprite(70, 120, 246, false, true),
+    violet: createStarSprite(168, 100, 250, false, true),
+    warmGold: createStarSprite(251, 200, 90, false, true),
+    pureWhite: createStarSprite(224, 238, 255, false, true),
+    pink: createStarSprite(244, 130, 190, false, true)
+};
+const BOKEH = [
+    createBokehSprite(255, 140, 200), createBokehSprite(120, 160, 255),
+    createBokehSprite(190, 130, 255), createBokehSprite(255, 210, 150)
+];
+const COL = {   // yulduz izi (warp) ranglari
+    pureWhite: 'rgb(225,238,255)', iceBlue: 'rgb(140,205,255)', deepBlue: 'rgb(120,150,255)',
+    violet: 'rgb(190,150,255)', warmGold: 'rgb(255,215,150)', pink: 'rgb(255,170,215)'
+};
+
+// ------------------------------------------------------------------
+//  Haqiqiy tumanlik / Somon yo'li (jarayon bilan yaratiladi)
+// ------------------------------------------------------------------
+function hash2(x, y) {
+    let h = Math.imul(x, 374761393) + Math.imul(y, 668265263);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+}
+function vnoise(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, oct) {
+    let amp = 0.5, f = 1, s = 0, n = 0;
+    for (let i = 0; i < oct; i++) { s += amp * vnoise(x * f, y * f); n += amp; amp *= 0.5; f *= 2.03; }
+    return s / n;
+}
+const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+function genNebula() {
+    const sc = isMobile ? 0.5 : 0.4;
+    const cw = Math.ceil(W * 1.3 * sc), ch = Math.ceil(H * 1.3 * sc);
+    const c = document.createElement('canvas');
+    c.width = cw; c.height = ch;
+    const g = c.getContext('2d');
+    const im = g.createImageData(cw, ch), d = im.data;
+    const seed = Math.random() * 200;
+    const unit = 4.2 / Math.max(cw, ch);
+    const ang = -0.95 + (Math.random() - 0.5) * 0.4;
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+
+    for (let y = 0; y < ch; y++) {
+        for (let x = 0; x < cw; x++) {
+            const u = x * unit + seed, v = y * unit + seed * 0.7;
+            const px = x / cw - 0.5, py = y / ch - 0.5;
+            const dist = Math.abs(-sa * px + ca * py);
+            const band = Math.exp(-(dist / 0.30) * (dist / 0.30));
+
+            const wx = fbm(u, v, 3), wy = fbm(u + 5.2, v + 1.7, 3);
+            const n = fbm(u + wx * 1.7, v + wy * 1.7, 5);
+            const rg = 1 - Math.abs(2 * fbm(u * 1.7 + 9 + wy, v * 1.7 + 3, 4) - 1);
+            let dens = Math.pow(n, 1.9) * 1.7 * (0.3 + band * 1.2) + Math.pow(rg, 6) * 0.55 * (0.35 + band);
+            const dust = fbm(u * 2.5 + 20, v * 2.5 + 7, 4);
+            dens *= 1 - 0.7 * sstep(0.52, 0.72, dust);
+            if (dens > 1.4) dens = 1.4;
+
+            const t = fbm(u * 0.8 + 40, v * 0.8 + 11, 3);
+            const cy = sstep(0.5, 0.8, fbm(u * 0.9 + 60, v * 0.9 + 31, 3));
+            const warm = sstep(0.6, 0.85, fbm(u * 1.1 + 70, v * 1.1 + 5, 3)) * (0.3 + band) * 0.8;
+            let r = 45 + (135 - 45) * t, gg = 25 + (55 - 25) * t, b = 140 + (215 - 140) * t;
+            r += (25 - r) * cy; gg += (160 - gg) * cy; b += (225 - b) * cy;
+            r += (235 - r) * warm; gg += (120 - gg) * warm; b += (65 - b) * warm;
+
+            const o = (y * cw + x) * 4;
+            d[o]     = Math.min(255, 2 + r * dens * 0.8);
+            d[o + 1] = Math.min(255, 3 + gg * dens * 0.8);
+            d[o + 2] = Math.min(255, 12 + b * dens * 0.8);
+            d[o + 3] = 255;
+        }
+    }
+    g.putImageData(im, 0, 0);
+    nebulaCanvas = c;
+}
+
+// ------------------------------------------------------------------
+//  3D dunyo: fon yulduzlari, halqa va bokeh
+// ------------------------------------------------------------------
+function randField(o, far = false) {
+    o.fx = (Math.random() * 2 - 1) * W * 1.6;
+    o.fy = (Math.random() * 2 - 1) * H * 1.6;
+    o.fz = far ? Z_FAR : 80 + Math.random() * (Z_FAR - 80);
+}
+
+function initCosmos() {
+    bgStars = [];
+    const names = ['pureWhite', 'pureWhite', 'pureWhite', 'iceBlue', 'iceBlue', 'deepBlue', 'violet', 'warmGold', 'pink'];
+    const count = isMobile ? 480 : 950;
+    for (let i = 0; i < count; i++) {
+        const big = Math.random() < 0.03;
+        const nm = names[Math.floor(Math.random() * names.length)];
+        const o = {
+            sprite: big ? SP[['sparkleCyan', 'sparkleGold', 'sparklePink', 'sparkleWhite'][Math.floor(Math.random() * 4)]] : SP[nm],
+            col: COL[nm],
+            size: big ? 16 + Math.random() * 14 : 3 + Math.random() * 5,
+            base: 0.45 + Math.random() * 0.55,
+            ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 1.0      // mayin miltillash
+        };
+        randField(o);
+        bgStars.push(o);
+    }
+
+    // Bosh atrofidagi yulduzlardan iborat aylana halqa (ikki qatlam, qarama-qarshi aylanadi)
+    ring = [];
+    const rn = isMobile ? 300 : 760, rnames = ['pureWhite', 'iceBlue', 'pink', 'warmGold', 'violet', 'pureWhite'];
+    for (let i = 0; i < rn; i++) {
+        const layer = i % 3 === 0 ? 1 : 0;
+        ring.push({
+            a: Math.random() * 6.2832, layer, jit: (layer ? 0.88 : 1) * (0.97 + Math.random() * 0.06),
+            sprite: Math.random() < 0.05 ? SP.sparkleWhite : SPC[rnames[Math.floor(Math.random() * rnames.length)]],
+            size: layer ? 3 + Math.random() * 3 : 3.5 + Math.random() * 4.5,
+            ph: Math.random() * 6.28, sp: 0.5 + Math.random() * 1.2
+        });
+    }
+
+    // Oldinda suzuvchi mayin bokeh nurlar (chuqurlik hissi)
+    bokeh = [];
+    for (let i = 0; i < (isMobile ? 9 : 14); i++) {
+        bokeh.push({
+            x: (Math.random() * 2 - 1) * W * 0.9, y: (Math.random() * 2 - 1) * H * 0.9,
+            z: 250 + Math.random() * 800, size: 70 + Math.random() * 130,
+            a: 0.05 + Math.random() * 0.07, sprite: BOKEH[i % 4],
+            vy: -(3 + Math.random() * 6), ph: Math.random() * 6.28
+        });
+    }
+}
+
+// ------------------------------------------------------------------
+//  Zaxira musiqa (CONFIG.musiqa bo'sh bo'lsa)
+// ------------------------------------------------------------------
+let actx = null;
+function startMusic() {
+    if (CONFIG.musiqa) {
+        const a = new Audio(CONFIG.musiqa); a.loop = true; a.volume = 0.95;
+        a.play().catch(() => {});
+        return;
+    }
+    try {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        const master = actx.createGain(); master.gain.value = 0;
+        master.gain.linearRampToValueAtTime(0.9, actx.currentTime + 5);
+        master.connect(actx.destination);
+        const delay = actx.createDelay(); delay.delayTime.value = 0.42;
+        const fb = actx.createGain(); fb.gain.value = 0.4;
+        const wet = actx.createGain(); wet.gain.value = 0.5;
+        delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+        const bus = actx.createGain(); bus.connect(master); bus.connect(delay);
+        const chords = [
+            [293.66, 349.23, 440.00, 587.33], [233.08, 293.66, 349.23, 466.16],
+            [349.23, 440.00, 523.25, 698.46], [261.63, 329.63, 392.00, 523.25]
+        ];
+        const pattern = [0, 1, 2, 3, 2, 1, 3, 2];
+        let step = 0, next = actx.currentTime + 0.1;
+        const note = (f, t, v, dur) => {
+            [[f, 'sine', v], [f * 2, 'triangle', v * 0.25]].forEach(([fr, type, vol]) => {
+                const o = actx.createOscillator(), g = actx.createGain();
+                o.type = type; o.frequency.value = fr;
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                o.connect(g); g.connect(bus);
+                o.start(t); o.stop(t + dur + 0.05);
+            });
+        };
+        const tick = () => {
+            while (next < actx.currentTime + 0.3) {
+                const chord = chords[Math.floor(step / 8) % chords.length];
+                note(chord[pattern[step % 8]], next, step % 8 === 0 ? 0.11 : 0.07, 2.4);
+                if (step % 8 === 0) note(chord[0] / 2, next, 0.12, 3.2);
+                next += 0.45; step++;
+            }
+        };
+        tick(); setInterval(tick, 100);
+    } catch (e) {}
+}
+
+// ------------------------------------------------------------------
+//  Rasm -> faqat yulduzlardan 3D "qalam chizgi" portret
+// ------------------------------------------------------------------
+function boxBlur(src, w, h, r) {
+    if (r < 1) return Float32Array.from(src);
+    const tmp = new Float32Array(w * h), out = new Float32Array(w * h), k = 2 * r + 1;
+    const cl = (v, m) => v < 0 ? 0 : v > m ? m : v;
+    for (let y = 0; y < h; y++) {
+        const row = y * w; let sum = 0;
+        for (let x = -r; x <= r; x++) sum += src[row + cl(x, w - 1)];
+        for (let x = 0; x < w; x++) {
+            tmp[row + x] = sum / k;
+            sum += src[row + cl(x + r + 1, w - 1)] - src[row + cl(x - r, w - 1)];
+        }
+    }
+    for (let x = 0; x < w; x++) {
+        let sum = 0;
+        for (let y = -r; y <= r; y++) sum += tmp[cl(y, h - 1) * w + x];
+        for (let y = 0; y < h; y++) {
+            out[y * w + x] = sum / k;
+            sum += tmp[cl(y + r + 1, h - 1) * w + x] - tmp[cl(y - r, h - 1) * w + x];
+        }
+    }
+    return out;
+}
+
+function findBackground(data, w, h, tol) {
+    const bg = new Uint8Array(w * h), stack = [];
+    const seed = i => { if (!bg[i]) { bg[i] = 1; stack.push(i); } };
+    for (let x = 0; x < w; x++) seed(x);
+    for (let y = 0; y < Math.floor(h * 0.75); y++) { seed(y * w); seed(y * w + w - 1); }
+    const diff = (a, b) => Math.abs(data[a * 4] - data[b * 4]) + Math.abs(data[a * 4 + 1] - data[b * 4 + 1]) + Math.abs(data[a * 4 + 2] - data[b * 4 + 2]);
+    while (stack.length) {
+        const i = stack.pop(), x = i % w, y = (i / w) | 0;
+        if (x > 0 && !bg[i - 1] && diff(i, i - 1) <= tol) { bg[i - 1] = 1; stack.push(i - 1); }
+        if (x < w - 1 && !bg[i + 1] && diff(i, i + 1) <= tol) { bg[i + 1] = 1; stack.push(i + 1); }
+        if (y > 0 && !bg[i - w] && diff(i, i - w) <= tol) { bg[i - w] = 1; stack.push(i - w); }
+        if (y < h - 1 && !bg[i + w] && diff(i, i + w) <= tol) { bg[i + w] = 1; stack.push(i + w); }
+    }
+    return bg;
+}
+
+// Fonni ajratib, odam maskasini (0..1) qaytaradi. Ishonchsiz bo'lsa null.
+function computeSubject(data, w, h) {
+    const N = w * h;
+    // Rasm allaqachon kesilgan (shaffof fonli PNG) bo'lsa — niqobni to'g'ridan-to'g'ri alfa kanalidan olamiz
+    let transp = 0;
+    for (let i = 0; i < N; i++) if (data[i * 4 + 3] < 128) transp++;
+    if (transp > N * 0.03) {
+        const m = new Float32Array(N);
+        for (let i = 0; i < N; i++) m[i] = data[i * 4 + 3] / 255;
+        return m;
+    }
+    if (!CONFIG.fonniOlibTashlash) return null;
+    // JPEG shovqini fon ajratishga xalaqit bermasligi uchun ranglarni biroz yumshatamiz
+    const sm = new Uint8ClampedArray(N * 4);
+    for (let ch = 0; ch < 3; ch++) {
+        const a = new Float32Array(N);
+        for (let i = 0; i < N; i++) a[i] = data[i * 4 + ch];
+        const b = boxBlur(a, w, h, 1);
+        for (let i = 0; i < N; i++) sm[i * 4 + ch] = b[i];
+    }
+    let bg = null, prevFrac = -1, frac = 1;
+    for (const tol of [8, 12, 16, 20, 24]) {
+        const cand = findBackground(sm, w, h, tol);
+        let c = 0;
+        for (let i = 0; i < N; i++) if (cand[i]) c++;
+        const f = 1 - c / N;
+        if (prevFrac >= 0 && prevFrac - f > 0.08) break;
+        bg = cand; frac = f; prevFrac = f;
+    }
+    if (!bg || frac <= 0.08 || frac >= 0.92) return null;
+    const m = new Float32Array(N);
+    for (let i = 0; i < N; i++) m[i] = bg[i] ? 0 : 1;
+    return boxBlur(m, w, h, 2);
+}
+
+// Istalgan rasmda odam kadrning kichik qismini egallasa, shu joyga "yaqinlashtiradi" (kesish)
+function findCrop(img) {
+    const full = { sx: 0, sy: 0, sw: img.width, sh: img.height };
+    const A = 220, sc = A / Math.max(img.width, img.height);
+    const aw = Math.max(16, Math.round(img.width * sc)), ah = Math.max(16, Math.round(img.height * sc));
+    const c = document.createElement('canvas'); c.width = aw; c.height = ah;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, 0, 0, aw, ah);
+    const subj = computeSubject(g.getImageData(0, 0, aw, ah).data, aw, ah);
+    if (!subj) return full;
+    const colCnt = new Float32Array(aw), rowCnt = new Float32Array(ah);
+    for (let y = 0; y < ah; y++) for (let x = 0; x < aw; x++) if (subj[y * aw + x] > 0.5) { colCnt[x]++; rowCnt[y]++; }
+    const first = (arr, thr) => { for (let i = 0; i < arr.length; i++) if (arr[i] > thr) return i; return 0; };
+    const lastI = (arr, thr) => { for (let i = arr.length - 1; i >= 0; i--) if (arr[i] > thr) return i; return arr.length - 1; };
+    let x0 = first(colCnt, ah * 0.03) / aw, x1 = (lastI(colCnt, ah * 0.03) + 1) / aw;
+    let y0 = first(rowCnt, aw * 0.03) / ah, y1 = (lastI(rowCnt, aw * 0.03) + 1) / ah;
+    const bw = x1 - x0, bh = y1 - y0;
+    if (bw < 0.25 || bh < 0.25) return full;                 // maska ishonchsiz
+    if (bw > 0.95 && bh > 0.95) return full;                 // allaqachon kadrni to'ldirgan
+    x0 = Math.max(0, x0 - bw * 0.07); x1 = Math.min(1, x1 + bw * 0.07);
+    y0 = Math.max(0, y0 - bh * 0.09); y1 = Math.min(1, y1 + bh * 0.02);
+    return { sx: x0 * img.width, sy: y0 * img.height, sw: (x1 - x0) * img.width, sh: (y1 - y0) * img.height };
+}
+
+// Xat kartasi va sarlavha egallaydigan joyni o'lchaydi (tik ekran uchun)
+function measureUI() {
+    const tw = $('typewriter'), prev = tw.textContent;
+    tw.style.minHeight = '0px';
+    tw.textContent = sub(CONFIG.xat);
+    const twH = tw.offsetHeight;
+    tw.style.minHeight = twH + 'px';           // karta boshidanoq to'liq o'lchamda turadi (yozilganda sakramaydi)
+    const cardH = $('msgCard').offsetHeight + (CONFIG.sana ? 28 : 0);
+    tw.textContent = prev;
+    return { cardH, headH: $('header').offsetHeight };
+}
+
+// Portret uchun ekrandagi bo'sh joyni hisoblaydi: tik telefon, yotiq telefon, planshet, kompyuter
+function layoutArea() {
+    if (W > H * 1.15) {            // yotiq: portret chapda, matn o'ngda
+        measureUI();
+        const x0 = W * 0.02, x1 = W * 0.5, y0 = H * 0.05, y1 = H * 0.93;
+        return { cx: (x0 + x1) / 2, y0, availH: y1 - y0, availW: x1 - x0 };
+    }
+    const ui = measureUI();         // tik
+    // Telefon (tik): rasm tepada, tabrik yozuvi rasmning pastida, tugmalar eng pastda
+    const top = Math.max(H * 0.03, 12);
+    const safeB = parseFloat(getComputedStyle($('header')).bottom) || 66;
+    const bottom = H - safeB - ui.headH - 4;
+    return { cx: W / 2, y0: top, availH: Math.max(H * 0.3, Math.min(bottom - top, H * 0.78)), availW: W * CONFIG.portretKattaligi };
+}
+
+function buildPortrait(img, snap = false) {
+    particles = [];
+    const crop = findCrop(img);
+    const area = layoutArea();
+    const scale = Math.min(Math.min(area.availW, 900) / crop.sw, area.availH / crop.sh);
+    const w = Math.max(40, Math.floor(crop.sw * scale)), h = Math.max(40, Math.floor(crop.sh * scale));
+    const offsetX = area.cx - w / 2;
+    const offsetY = area.y0 + (area.availH - h) / 2;
+    const sizeK = Math.max(1, w / 380);      // kattaroq portretda yulduzlar ham kattaroq bo'ladi
+    portraitRect = { x: offsetX, y: offsetY, w, h };
+
+    // Halqa: bosh atrofida, ekran ichida qoladi
+    const rcx = offsetX + w / 2, rcy = offsetY + h * 0.4;
+    ringC = { x: rcx, y: rcy, r: Math.max(30, Math.min(w * 0.6, h * 0.62, rcx - 8, W - rcx - 8, rcy - 8)) };
+
+    const off = document.createElement('canvas');
+    off.width = w; off.height = h;
+    const oc = off.getContext('2d', { willReadFrequently: true });
+    oc.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+    const data = oc.getImageData(0, 0, w, h).data;
+    const N = w * h;
+
+    const lum = new Float32Array(N);
+    for (let i = 0; i < N; i++) lum[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+
+    // 1) Ob'ekt (odam) maskasi
+    const maskOrNull = computeSubject(data, w, h);
+    const hasMask = !!maskOrNull;
+    const subject = maskOrNull || new Float32Array(N).fill(1);
+
+    // 2) Ton va chekkalar
+    const smooth = boxBlur(lum, w, h, 1);
+    const base = boxBlur(lum, w, h, Math.max(4, Math.round(w / 16)));
+    const tone = new Float32Array(N);
+    for (let i = 0; i < N; i++) tone[i] = smooth[i] * 0.55 + (smooth[i] - base[i]) * 1.8 + 18;
+    const hist = new Uint32Array(512); let hc = 0;
+    for (let i = 0; i < N; i++) {
+        if (subject[i] > 0.5) { hist[Math.max(0, Math.min(511, Math.round(tone[i]) + 128))]++; hc++; }
+    }
+    let lo = 0, hi = 511, acc = 0;
+    for (let i = 0; i < 512; i++) { acc += hist[i]; if (acc >= hc * 0.04) { lo = i; break; } }
+    acc = 0;
+    for (let i = 0; i < 512; i++) { acc += hist[i]; if (acc >= hc * 0.97) { hi = i; break; } }
+    lo -= 128; hi -= 128;
+    const range = Math.max(40, hi - lo);
+    for (let i = 0; i < N; i++) tone[i] = Math.min(1, Math.max(0, (tone[i] - lo) / range));
+
+    // 3) 3D chuqurlik xaritasi: siluet "shishirilib" yumaloq bo'ladi + yorug' joylar biroz oldinga chiqadi
+    const D = CONFIG.hajm3D;
+    const inflate = D > 0 ? boxBlur(subject, w, h, Math.max(5, Math.round(w / 14))) : null;
+    const toneSoft = D > 0 ? boxBlur(tone, w, h, 5) : null;
+
+    // 4) Yulduzlarni tonga qarab sochish
+    // Portret katta bo'lsa (kompyuter, planshet) yulduzlar zichligi ham, soni ham mos ravishda oshadi
+    const densK = Math.min(2.2, Math.max(1, Math.sqrt(w * h) / 400));
+    const cap = Math.round(MAX_PARTICLES * densK), tries = cap * 14;
+    const gain = CONFIG.portretYorqinligi;
+    for (let s = 0; s < tries && particles.length < cap; s++) {
+        const rx = 2 + Math.random() * (w - 4), ry = 2 + Math.random() * (h - 4);
+        const x = Math.floor(rx), y = Math.floor(ry), idx = y * w + x;
+
+        const nx = (rx / w - 0.5) / 0.5, ny = (ry / h - 0.5) / 0.6;
+        const focus = Math.max(0, 1 - (nx * nx * 0.55 + ny * ny * 0.6));
+        // Fon ajratilmagan bo'lsa (murakkab fon) yulduzlar faqat markazga — yuz atrofiga — yig'iladi
+        const sj = hasMask ? subject[idx] * (0.55 + 0.45 * focus) : Math.pow(focus, 1.7);
+        if (sj < 0.2) continue;
+
+        const gx = smooth[idx + 1] - smooth[idx - 1], gy = smooth[idx + w] - smooth[idx - w];
+        // Telefon ushlagan qo'l (bilak va tirsak): ko'ylak bilan rangi yaqin bo'lgani uchun yulduzlarda yo'qolib qolardi,
+        // shu joyda chekkalarga sezgirlik va zichlik oshiriladi
+        const ax = (rx / w - 0.28) / 0.14, ay = (ry / h - 0.60) / 0.20;
+        const armW = Math.max(0, 1 - ax * ax - ay * ay);
+        const edge = Math.min(1, (Math.abs(gx) + Math.abs(gy)) / (60 - 38 * armW));
+        const tn = Math.max(tone[idx], armW * 0.6);
+        const dens = Math.max(tn * 0.9, edge);
+
+        if (Math.random() > (0.03 + 0.55 * Math.pow(dens, 1.4)) * sj * densK) continue;
+
+        let sprite, baseSize, alpha, col;
+        if (dens > 0.85 && Math.random() < 0.01) {          // kam, mayin chaqnovchi yulduzlar
+            const k = Math.random();
+            sprite = k < 0.4 ? SP.sparkleCyan : k < 0.7 ? SP.sparkleWhite : k < 0.9 ? SP.sparkleGold : SP.sparklePink;
+            baseSize = (6 + Math.random() * 4) * sizeK; alpha = 0.7; col = COL.pureWhite;
+        } else {
+            const r = Math.random();
+            let nm = tn > 0.8 ? (r < 0.3 ? 'warmGold' : 'pureWhite')
+                   : tn > 0.55 ? (r < 0.55 ? 'pureWhite' : 'iceBlue')
+                   : tn > 0.3 ? (r < 0.6 ? 'iceBlue' : 'deepBlue')
+                   : (r < 0.55 ? 'deepBlue' : 'violet');
+            sprite = SPC[nm]; col = COL[nm];
+            baseSize = (1.8 + dens * 2.1 + Math.random() * 0.7) * sizeK;
+            alpha = Math.min(1, (0.22 + 0.5 * Math.max(tn, edge)) * 0.8 * gain);
+        }
+
+        // Dunyo koordinatalari: tinch holatda ekrandagi joyi aynan rasm bilan mos tushadi
+        const depth = D > 0 ? D * (Math.sqrt(inflate[idx] * (0.3 + 0.7 * focus)) * 105 + toneSoft[idx] * 32) : 0;
+        const wz = ZP - depth;
+        const tx = offsetX + rx, ty = offsetY + ry;
+        const p = {
+            wx: (tx - W / 2) * wz / F, wy: (ty - H / 2) * wz / F, wz,
+            ty, sprite, col, baseSize, alpha,
+            ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 1.0,       // sekin, mayin miltillash
+            delay: Math.random() * 3.0, dur: 4.5 + Math.random() * 2.5,
+            swirl: (1.0 + Math.random() * 0.9) * (Math.random() < 0.85 ? 1 : -1),
+            cap: false, x0: 0, y0: 0, z0: 0
+        };
+        randField(p);
+        if (snap) { p.cap = true; p.x0 = p.wx; p.y0 = p.wy; p.z0 = p.wz; p.delay = 0; p.dur = 0.001; }
+        particles.push(p);
+    }
+}
+
+// ------------------------------------------------------------------
+//  Sarlavha: qo'lda yozilgandek (xat uslubida) yulduzlardan chiziladi
+// ------------------------------------------------------------------
+const TITLE_TEXT = "Tug'ilgan kuning muborak!";
+const TITLE_FONT = '"Great Vibes", "Snell Roundhand", "Brush Script MT", cursive';
+function buildTitle() {
+    const el = $('mainTitle'), hb = $('header');
+    const mc = document.createElement('canvas').getContext('2d');
+    const wOf = (txt, px) => { mc.font = `${px}px ${TITLE_FONT}`; return mc.measureText(txt).width; };
+    const availW = Math.max(120, hb.clientWidth - 32);
+    const maxPx = Math.min(78, Math.max(30, H * 0.085));
+    const words = TITLE_TEXT.split(' ');
+    const one = [TITLE_TEXT], two = [words.slice(0, 2).join(' '), words.slice(2).join(' ')];
+    const fit = ls => Math.min(maxPx, availW / Math.max(...ls.map(l => wOf(l, 100))) * 100);
+    let lines = one, px = fit(one);
+    if (px < 62) { const p2 = fit(two); if (p2 > px) { lines = two; px = p2; } }
+    el.innerHTML = lines.join('<br>');
+    el.style.fontSize = px + 'px';
+
+    const rect = el.getBoundingClientRect();
+    const cw = Math.max(2, Math.ceil(rect.width)), ch = Math.max(2, Math.ceil(rect.height));
+    const lineH = px * 1.3;
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.font = `${px}px ${TITLE_FONT}`; g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const lw = lines.map(l => g.measureText(l).width);
+    g.strokeStyle = '#fff'; g.lineWidth = Math.max(1, px * 0.035); g.lineJoin = 'round';
+    lines.forEach((l, i) => { g.strokeText(l, cw / 2, (i + 0.5) * lineH); g.fillText(l, cw / 2, (i + 0.5) * lineH); });
+    const d = g.getImageData(0, 0, cw, ch).data;
+
+    const kinds = [['pureWhite', 0.34], ['pink', 0.30], ['warmGold', 0.20], ['violet', 0.08], ['iceBlue', 0.08]];
+    const pick = () => { let r = Math.random(); for (const [k, w] of kinds) { if ((r -= w) < 0) return k; } return 'pureWhite'; };
+    const stars = [], step = 1.5;
+    for (let y = 0; y < ch; y += step) for (let x = 0; x < cw; x += step) {
+        const xi = Math.floor(x), yi = Math.floor(y);
+        const a = d[(yi * cw + xi) * 4 + 3];
+        if (a < 110) continue;
+        const li = Math.min(lines.length - 1, Math.floor(y / lineH));
+        const xf = Math.min(1, Math.max(0, (x - (cw / 2 - lw[li] / 2)) / lw[li]));
+        const kind = pick(), glow = Math.random() < 0.12;
+        stars.push({
+            x: rect.left + x + (Math.random() - 0.5) * 1.4, y: rect.top + y + (Math.random() - 0.5) * 1.4,
+            t: (li + xf) / lines.length * 5.5 + Math.random() * 0.25,
+            size: (px / 38) * (1.5 + Math.random() * 1.9), a: (0.6 + Math.random() * 0.4) * (a / 255),
+            sprite: SPC[kind], glow: glow ? SP[kind] : null,
+            ph: Math.random() * 6.28, sp: 1.2 + Math.random() * 2.4
+        });
+    }
+    titleStars = stars;
+}
+
+function resetField() {
+    for (const p of particles) { randField(p); p.cap = false; }
+    for (const s of bgStars) randField(s);
+}
+
+// ------------------------------------------------------------------
+//  Ssenariy
+// ------------------------------------------------------------------
+let runId = 0;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function runSequence(quick = false) {
+    const id = ++runId;
+    const alive = () => id === runId;
+
+    assemble = false; sparklesOn = false; shimmerOn = false; titleOn = false; warpTarget = 0;
+    resetField();
+    $('header').classList.remove('show');
+    $('msgCard').classList.remove('visible');
+    $('counter').classList.remove('show');
+    $('actions').classList.remove('show');
+    $('line').classList.remove('show');
+    $('typewriter').textContent = '';
+    $('subTitle').innerText = '';
+    await wait(quick ? 500 : 1000); if (!alive()) return;
+
+    // 1) Yorug'lik tezligida mayin uchish + she'riy satrlar (yangi rasm tanlanganda o'tkazib yuboriladi)
+    if (!quick) { warpTarget = CONFIG.yorugTezligi; await wait(1500); if (!alive()) return; }
+    const line = $('line');
+    for (let i = 0; i < (quick ? 0 : CONFIG.satrlar.length); i++) {
+        if (i === CONFIG.satrlar.length - 1) warpTarget = 0;     // oxirgi satrda asta sekinlashamiz
+        line.textContent = sub(CONFIG.satrlar[i]);
+        line.classList.add('show');
+        await wait(3600); if (!alive()) return;
+        line.classList.remove('show');
+        await wait(1300); if (!alive()) return;
+    }
+
+    // 2) Yulduzlar spiral bo'lib uchib kelib yuzni chizadi
+    assemble = true; assembleStart = performance.now();
+    $('header').classList.add('show');
+    titleOn = true; titleStart = performance.now();
+    await wait(10500); if (!alive()) return;
+
+    // 3) Portret tugallandi — halqa va yorug'lik to'lqini
+    shimmerOn = true;
+    await wait(5500); if (!alive()) return;
+
+    // 4) Miltillovchi yulduzlar
+    sparklesOn = true;
+    await wait(1400); if (!alive()) return;
+    await wait(2500); if (!alive()) return;
+    $('actions').classList.add('show');
+}
+
+// ------------------------------------------------------------------
+//  3D chizish
+// ------------------------------------------------------------------
+let cyaw = 1, syaw = 0, cpit = 1, spit = 0;
+
+// Dunyo nuqtasini kamera orqali ekranga proyeksiya qiladi va chizadi
+function plot(x, y, z, sprite, size, alpha, col, streakOK) {
+    const dz = z - ZP;
+    const x1 = x * cyaw + dz * syaw, z1 = -x * syaw + dz * cyaw;
+    const y2 = y * cpit - z1 * spit, z2 = y * spit + z1 * cpit;
+    const zz = z2 + ZP;
+    if (zz < Z_NEAR) return;
+    const k = F / zz;
+    const sx = CXs + x1 * k, sy = CYs + y2 * k;
+    if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) return;
+    const sz = size * (k > 3 ? 3 : k);
+    let a = alpha;
+    if (WARP > 0.04 && streakOK) {
+        const kt = F / (zz + WARP * TAIL);
+        ctx.globalAlpha = Math.min(1, a) * Math.min(1, WARP * 3) * 0.65;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = Math.max(0.6, sz * 0.32);
+        ctx.beginPath();
+        ctx.moveTo(CXs + x1 * kt, CYs + y2 * kt);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+        a *= Math.max(0, 1 - WARP * 1.6);
+    }
+    if (a > 0.02 && sz > 0.35) {
+        ctx.globalAlpha = a > 1 ? 1 : a;
+        ctx.drawImage(sprite, sx - sz / 2, sy - sz / 2, sz, sz);
+    }
+}
+
+// Maydon yulduzining yaqinlik/uzoqlik bo'yicha so'nishi
+function fieldFade(z) {
+    let f = 0.28 + 0.72 * (1 - z / Z_FAR);
+    if (z > Z_FAR - 350) f *= Math.max(0, (Z_FAR - z) / 350);
+    if (z < 220) f *= Math.max(0, (z - Z_NEAR) / 160);
+    return f;
+}
+
+let last = performance.now(), shootCd = 3;
+function animate(now) {
+    const dt = Math.max(0.001, Math.min(0.05, (now - last) / 1000 || 0.016));
+    last = now;
+    const t = now / 1000;
+
+    // Yorug'lik tezligi: juda mayin tezlanish/sekinlashish
+    WARP += (warpTarget - WARP) * (1 - Math.exp(-dt * 0.55));
+    if (WARP < 0.002 && warpTarget === 0) WARP = 0;
+    const vz = 14 + WARP * 900;
+
+    // Kamera: sekin tebranish + sichqoncha/barmoq bilan burish
+    const yawT = 0, pitT = 0;      // kamera burilmaydi: portret doim to'g'ridan-to'g'ri ko'rinadi
+    camYaw += (yawT - camYaw) * (1 - Math.exp(-dt * 2));
+    camPitch += (pitT - camPitch) * (1 - Math.exp(-dt * 2));
+    cyaw = Math.cos(camYaw); syaw = Math.sin(camYaw); cpit = Math.cos(camPitch); spit = Math.sin(camPitch);
+
+    // ---- Fon: ikki qatlamli tumanlik, cheksiz sekin yaqinlashish ----
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#02030c';
+    ctx.fillRect(0, 0, W, H);
+    if (nebulaCanvas) {
+        nebPhase += dt * (0.004 + 0.12 * WARP);
+        ctx.globalCompositeOperation = 'lighter';
+        for (let L = 0; L < 2; L++) {
+            const f = (nebPhase + L * 0.5) % 1;
+            const sc = 1 + f * 0.9;
+            const al = Math.pow(Math.sin(Math.PI * f), 2);
+            ctx.save();
+            ctx.globalAlpha = al * 0.72;
+            ctx.translate(CXs - camYaw * W * 0.22, CYs - camPitch * H * 0.2);
+            if (L === 1) ctx.rotate(Math.PI);
+            const bw = W * 1.3 * sc, bh = H * 1.3 * sc;
+            ctx.drawImage(nebulaCanvas, -bw / 2, -bh / 2, bw, bh);
+            ctx.restore();
+        }
+    } else {
+        ctx.globalCompositeOperation = 'lighter';
+    }
+
+    // Warp paytida markazda mayin yorug'lik
+    if (WARP > 0.03) {
+        const k = Math.min(1, WARP / 0.4);
+        const rr = Math.max(W, H) * 0.6;
+        const g = ctx.createRadialGradient(CXs, CYs, 0, CXs, CYs, rr);
+        g.addColorStop(0, `rgba(200,180,255,${0.2 * k})`);
+        g.addColorStop(0.35, `rgba(140,120,255,${0.07 * k})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = 1; ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    // Portret orqasi biroz qorayadi, chetida mayin nur
+    glowK += ((shimmerOn || (assemble && (now - assembleStart) > 6000) ? 1 : 0) - glowK) * dt * 0.5;
+    if (glowK > 0.01) {
+        const cx = portraitRect.x + portraitRect.w / 2, cy = portraitRect.y + portraitRect.h / 2;
+        const rr = Math.max(portraitRect.w, portraitRect.h) * 0.85;
+        ctx.globalCompositeOperation = 'source-over';
+        let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+        g.addColorStop(0, `rgba(2,3,16,${0.55 * glowK})`);
+        g.addColorStop(0.65, `rgba(2,3,16,${0.3 * glowK})`);
+        g.addColorStop(1, 'rgba(2,3,16,0)');
+        ctx.globalAlpha = 1; ctx.fillStyle = g;
+        ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+        ctx.globalCompositeOperation = 'lighter';
+        g = ctx.createRadialGradient(cx, cy, rr * 0.45, cx, cy, rr);
+        g.addColorStop(0, 'rgba(0,0,0,0)');
+        g.addColorStop(0.55, `rgba(120,110,255,${0.07 * glowK})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+    }
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+
+    // ---- Bokeh (eng orqada, mayin) ----
+    for (const b of bokeh) {
+        b.y += b.vy * dt; b.ph += dt * 0.5;
+        b.z -= vz * 0.25 * dt;
+        if (b.z < 160) { b.z = 1050; b.x = (Math.random() * 2 - 1) * W * 0.9; b.y = (Math.random() * 2 - 1) * H * 0.9; }
+        if (b.y < -H * 1.1) b.y = H * 1.1;
+        const fade = b.z < 300 ? (b.z - 160) / 140 : b.z > 900 ? (1050 - b.z) / 150 : 1;
+        plot(b.x, b.y, b.z, b.sprite, b.size, b.a * (0.7 + 0.3 * Math.sin(b.ph)) * Math.max(0, fade), null, false);
+    }
+
+    // ---- Fon yulduzlari ----
+    for (const s of bgStars) {
+        s.fz -= vz * dt;
+        if (s.fz < Z_NEAR + 20) randField(s, true);
+        s.ph += s.sp * dt;
+        const a = s.base * fieldFade(s.fz) * (0.78 + 0.22 * Math.sin(s.ph));
+        plot(s.fx, s.fy, s.fz, s.sprite, s.size, a, s.col, true);
+    }
+
+    // ---- Portret yulduzlari ----
+    const elapsed = assemble ? (now - assembleStart) / 1000 : -1;
+    const waveY = portraitRect.y + (((t * 0.3) % 1.7) - 0.3) * portraitRect.h;
+    const waveW = portraitRect.h * 0.1;
+    for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.ph += p.sp * dt;
+        const tw = 0.88 + 0.12 * Math.sin(p.ph);
+
+        let e = 0;
+        if (assemble) { const el = elapsed - p.delay; e = el <= 0 ? 0 : Math.min(1, el / p.dur); }
+
+        if (e <= 0 && !p.cap) {
+            // Hali yulduz maydonining bir qismi — jim, sokin va xira
+            p.fz -= vz * dt;
+            if (p.fz < Z_NEAR + 20) randField(p, true);
+            const a = p.alpha * 0.5 * fieldFade(p.fz) * tw;
+            plot(p.fx, p.fy, p.fz, p.sprite, p.baseSize * 0.85, a, p.col, (i & 3) === 0);
+            continue;
+        }
+
+        if (!p.cap) { p.x0 = p.fx; p.y0 = p.fy; p.z0 = Math.max(p.fz, 450); p.cap = true; }
+
+        let x, y, z, a = p.alpha * tw, size = p.baseSize;
+        if (e < 1) {
+            const s = e < 0.5 ? 4 * e * e * e : 1 - Math.pow(-2 * e + 2, 3) / 2;   // yumshoq tezlanish va sekinlashish
+            const vx = p.x0 + (p.wx - p.x0) * s, vy = p.y0 + (p.wy - p.y0) * s;
+            const ang = (1 - s) * p.swirl, ca = Math.cos(ang), sa = Math.sin(ang);
+            x = vx * ca - vy * sa; y = vx * sa + vy * ca;
+            z = p.z0 + (p.wz - p.z0) * s;
+            a *= 0.5 + 0.5 * s;
+        } else {
+            x = p.wx; y = p.wy; z = p.wz;
+            if (shimmerOn) {
+                const boost = Math.max(0, 1 - Math.abs(p.ty - waveY) / waveW);
+                a = Math.min(1, a + boost * 0.22); size *= 1 + boost * 0.25;
+            }
+        }
+        plot(x, y, z, p.sprite, size, a, p.col, false);
+    }
+
+    // ---- Bosh atrofidagi yulduz halqa ----
+    ringK += ((shimmerOn ? 1 : 0) - ringK) * dt * 0.4;
+    if (ringK > 0.01) {
+        const breathe = 1 + 0.015 * Math.sin(t * 0.8);
+        const rs = Math.min(2.4, Math.max(1, ringC.r / 170));      // katta ekranda halqa yulduzlari ham kattaroq
+        for (const r of ring) {
+            r.ph += r.sp * dt;
+            const a = r.a + (r.layer ? -t * 0.07 : t * 0.1);
+            const R = ringC.r * r.jit * breathe;
+            const tw = 0.7 + 0.3 * Math.sin(r.ph);
+            plot(ringC.x - W / 2 + Math.cos(a) * R, ringC.y - H / 2 + Math.sin(a) * R, ZP,
+                 r.sprite, r.size * rs, ringK * tw * (r.layer ? 0.4 : 0.6), null, false);
+        }
+    }
+
+    // ---- Uchib o'tuvchi yulduzlar (faqat tinch paytda) ----
+    shootCd -= dt;
+    if (shootCd <= 0) {
+        shootCd = 3 + Math.random() * 4;
+        if (WARP < 0.15) {
+            const a = Math.PI * (0.15 + Math.random() * 0.15);
+            shooters.push({ x: Math.random() * W * 0.8, y: Math.random() * H * 0.35,
+                            vx: Math.cos(a) * 600, vy: Math.sin(a) * 600, life: 1 });
+        }
+    }
+    for (let i = shooters.length - 1; i >= 0; i--) {
+        const s = shooters[i];
+        s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt * 1.1;
+        if (s.life <= 0) { shooters.splice(i, 1); continue; }
+        const tx = s.x - s.vx * 0.1, ty = s.y - s.vy * 0.1;
+        const g = ctx.createLinearGradient(s.x, s.y, tx, ty);
+        g.addColorStop(0, `rgba(255,255,255,${s.life})`); g.addColorStop(1, 'rgba(125,211,252,0)');
+        ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(tx, ty); ctx.stroke();
+    }
+
+    // ---- Sarlavha: qo'lda yozilgandek chap tomondan yulduzlar paydo bo'ladi ----
+    if (titleOn) {
+        const el = (now - titleStart) / 1000;
+        for (let i = 0; i < titleStars.length; i++) {
+            const s = titleStars[i], age = el - s.t;
+            if (age < 0) continue;
+            const born = Math.min(1, age / 0.6);
+            const tw = 0.78 + 0.22 * Math.sin(t * s.sp + s.ph);
+            const sz = s.size * (0.6 + 0.4 * born) * (0.9 + 0.1 * tw);
+            if (s.glow) {
+                ctx.globalAlpha = s.a * born * 0.3 * tw;
+                ctx.drawImage(s.glow, s.x - sz * 1.7, s.y - sz * 1.7, sz * 3.4, sz * 3.4);
+            }
+            if (age < 0.45) {                      // "qalam" uchidagi yorqin chaqnash
+                const f = 1 - age / 0.45, fz = sz * (2.4 + 3 * f);
+                ctx.globalAlpha = 0.55 * f;
+                ctx.drawImage(SP.sparkleWhite, s.x - fz / 2, s.y - fz / 2, fz, fz);
+            }
+            ctx.globalAlpha = Math.min(1, s.a * born * tw);
+            ctx.drawImage(s.sprite, s.x - sz / 2, s.y - sz / 2, sz, sz);
+        }
+    }
+
+    // ---- Xat paytida: sekin yonib-o'chadigan yirik yulduzlar ----
+    if (sparklesOn && twinklers.length < 70 && Math.random() < dt * 10) {
+        const keys = ['sparkleCyan', 'sparkleWhite', 'sparkleGold', 'sparklePink'];
+        twinklers.push({ x: Math.random() * W, y: Math.random() * H,
+                         size: 14 + Math.random() * 24, sprite: SP[keys[Math.floor(Math.random() * 4)]],
+                         age: 0, life: 2.2 + Math.random() * 2.6, drift: (Math.random() - 0.5) * 6 });
+    }
+    for (let i = twinklers.length - 1; i >= 0; i--) {
+        const s = twinklers[i];
+        s.age += dt; s.y -= 4 * dt; s.x += s.drift * dt;
+        if (s.age >= s.life) { twinklers.splice(i, 1); continue; }
+        const e = Math.pow(Math.sin(Math.PI * s.age / s.life), 2);
+        const sz = s.size * (0.55 + 0.45 * e);
+        ctx.globalAlpha = e;
+        ctx.drawImage(s.sprite, s.x - sz / 2, s.y - sz / 2, sz, sz);
+    }
+
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animate);
+}
+
+// ------------------------------------------------------------------
+//  Hodisalar va ishga tushirish
+// ------------------------------------------------------------------
+addEventListener('pointermove', e => { ptr.x = e.clientX / W; ptr.y = e.clientY / H; ptr.active = true; });
+addEventListener('pointerleave', () => { ptr.active = false; });
+
+let started = false;
+$('intro').addEventListener('click', e => {
+    if (e.target.closest('.pickInline')) return;      // rasm tanlash tugmasi namoyishni boshlamasin
+    if (started) return;
+    started = true;
+    $('intro').classList.add('hide');
+    startMusic();
+    runSequence();
+});
+$('replay').addEventListener('click', () => runSequence());
+
+function loadImage(src) {
+    return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.onerror = rej;
+        img.src = src;
+    });
+}
+
+// Istalgan foydalanuvchi istalgan rasmni tanlashi mumkin
+$('fileInput').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+        loadedImg = await loadImage(URL.createObjectURL(f));
+    } catch (err) {
+        $('introTitle').innerText = "Bu rasmni ochib bo'lmadi.\nBoshqa rasm tanlang (JPG yoki PNG).";
+        return;
+    }
+    e.target.value = '';
+    $('introTitle').innerText = sub(CONFIG.kirish);
+    $('startBtn').style.display = '';
+    buildPortrait(loadedImg);
+    if (started) runSequence(true);                    // yangi rasm bilan darhol portret bosqichidan boshlanadi
+});
+
+let rz;
+addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => {
+        sizeCanvas(); genNebula(); initCosmos(); buildTitle();
+        if (loadedImg) buildPortrait(loadedImg, assemble);
+    }, 300);
+});
+
+(async function init() {
+    genNebula();
+    initCosmos();
+    try { await Promise.race([document.fonts.load('64px "Great Vibes"'), wait(2500)]); } catch (e) {}
+    buildTitle();
+    try {
+        loadedImg = await loadImage(CONFIG.rasm);
+        buildPortrait(loadedImg);
+    } catch (e) {
+        $('introTitle').innerText = `'${CONFIG.rasm}' topilmadi.\nPastdagi tugma bilan rasm tanlang.`;
+        $('startBtn').style.display = 'none';
+    }
+    // Shriftlar yuklangach matn o'lchamlari o'zgaradi — joylashuvni qayta hisoblaymiz
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { buildTitle(); if (loadedImg && !started) buildPortrait(loadedImg); });
+    requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
