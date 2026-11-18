@@ -145,7 +145,6 @@ body.clean #actions { display: none; }
 <div id="line"></div>
 
 <div class="header-box" id="header">
-    <div class="title" id="mainTitle"></div>
     <div class="subtitle" id="subTitle"></div>
 </div>
 
@@ -233,7 +232,6 @@ let ptr = { x: 0.5, y: 0.5, active: false };
 let camYaw = 0, camPitch = 0;
 let loadedImg = null, nebulaCanvas = null;
 let portraitRect = { x: 0, y: 0, w: 1, h: 1 };
-let titleStars = [], titleOn = false, titleStart = 0;
 
 // ------------------------------------------------------------------
 //  Yulduz teksturalari
@@ -724,57 +722,6 @@ function buildPortrait(img, snap = false) {
     }
 }
 
-// ------------------------------------------------------------------
-//  Sarlavha: qo'lda yozilgandek (xat uslubida) yulduzlardan chiziladi
-// ------------------------------------------------------------------
-const TITLE_TEXT = "Tug'ilgan kuning muborak!";
-const TITLE_FONT = '"Great Vibes", "Snell Roundhand", "Brush Script MT", cursive';
-function buildTitle() {
-    const el = $('mainTitle'), hb = $('header');
-    const mc = document.createElement('canvas').getContext('2d');
-    const wOf = (txt, px) => { mc.font = `${px}px ${TITLE_FONT}`; return mc.measureText(txt).width; };
-    const availW = Math.max(120, hb.clientWidth - 32);
-    const maxPx = Math.min(78, Math.max(30, H * 0.085));
-    const words = TITLE_TEXT.split(' ');
-    const one = [TITLE_TEXT], two = [words.slice(0, 2).join(' '), words.slice(2).join(' ')];
-    const fit = ls => Math.min(maxPx, availW / Math.max(...ls.map(l => wOf(l, 100))) * 100);
-    let lines = one, px = fit(one);
-    if (px < 62) { const p2 = fit(two); if (p2 > px) { lines = two; px = p2; } }
-    el.innerHTML = lines.join('<br>');
-    el.style.fontSize = px + 'px';
-
-    const rect = el.getBoundingClientRect();
-    const cw = Math.max(2, Math.ceil(rect.width)), ch = Math.max(2, Math.ceil(rect.height));
-    const lineH = px * 1.3;
-    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.font = `${px}px ${TITLE_FONT}`; g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    const lw = lines.map(l => g.measureText(l).width);
-    g.strokeStyle = '#fff'; g.lineWidth = Math.max(1, px * 0.035); g.lineJoin = 'round';
-    lines.forEach((l, i) => { g.strokeText(l, cw / 2, (i + 0.5) * lineH); g.fillText(l, cw / 2, (i + 0.5) * lineH); });
-    const d = g.getImageData(0, 0, cw, ch).data;
-
-    const kinds = [['pureWhite', 0.34], ['pink', 0.30], ['warmGold', 0.20], ['violet', 0.08], ['iceBlue', 0.08]];
-    const pick = () => { let r = Math.random(); for (const [k, w] of kinds) { if ((r -= w) < 0) return k; } return 'pureWhite'; };
-    const stars = [], step = 1.5;
-    for (let y = 0; y < ch; y += step) for (let x = 0; x < cw; x += step) {
-        const xi = Math.floor(x), yi = Math.floor(y);
-        const a = d[(yi * cw + xi) * 4 + 3];
-        if (a < 110) continue;
-        const li = Math.min(lines.length - 1, Math.floor(y / lineH));
-        const xf = Math.min(1, Math.max(0, (x - (cw / 2 - lw[li] / 2)) / lw[li]));
-        const kind = pick(), glow = Math.random() < 0.12;
-        stars.push({
-            x: rect.left + x + (Math.random() - 0.5) * 1.4, y: rect.top + y + (Math.random() - 0.5) * 1.4,
-            t: (li + xf) / lines.length * 5.5 + Math.random() * 0.25,
-            size: (px / 38) * (1.5 + Math.random() * 1.9), a: (0.6 + Math.random() * 0.4) * (a / 255),
-            sprite: SPC[kind], glow: glow ? SP[kind] : null,
-            ph: Math.random() * 6.28, sp: 1.2 + Math.random() * 2.4
-        });
-    }
-    titleStars = stars;
-}
-
 function resetField() {
     for (const p of particles) { randField(p); p.cap = false; }
     for (const s of bgStars) randField(s);
@@ -790,7 +737,7 @@ async function runSequence(quick = false) {
     const id = ++runId;
     const alive = () => id === runId;
 
-    assemble = false; sparklesOn = false; shimmerOn = false; titleOn = false; warpTarget = 0;
+    assemble = false; sparklesOn = false; shimmerOn = false; warpTarget = 0;
     resetField();
     $('header').classList.remove('show');
     $('msgCard').classList.remove('visible');
@@ -816,7 +763,6 @@ async function runSequence(quick = false) {
     // 2) Yulduzlar spiral bo'lib uchib kelib yuzni chizadi
     assemble = true; assembleStart = performance.now();
     $('header').classList.add('show');
-    titleOn = true; titleStart = performance.now();
     await wait(10500); if (!alive()) return;
 
     // 3) Portret tugallandi — halqa va yorug'lik to'lqini
@@ -1044,29 +990,6 @@ function animate(now) {
         ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(tx, ty); ctx.stroke();
     }
 
-    // ---- Sarlavha: qo'lda yozilgandek chap tomondan yulduzlar paydo bo'ladi ----
-    if (titleOn) {
-        const el = (now - titleStart) / 1000;
-        for (let i = 0; i < titleStars.length; i++) {
-            const s = titleStars[i], age = el - s.t;
-            if (age < 0) continue;
-            const born = Math.min(1, age / 0.6);
-            const tw = 0.78 + 0.22 * Math.sin(t * s.sp + s.ph);
-            const sz = s.size * (0.6 + 0.4 * born) * (0.9 + 0.1 * tw);
-            if (s.glow) {
-                ctx.globalAlpha = s.a * born * 0.3 * tw;
-                ctx.drawImage(s.glow, s.x - sz * 1.7, s.y - sz * 1.7, sz * 3.4, sz * 3.4);
-            }
-            if (age < 0.45) {                      // "qalam" uchidagi yorqin chaqnash
-                const f = 1 - age / 0.45, fz = sz * (2.4 + 3 * f);
-                ctx.globalAlpha = 0.55 * f;
-                ctx.drawImage(SP.sparkleWhite, s.x - fz / 2, s.y - fz / 2, fz, fz);
-            }
-            ctx.globalAlpha = Math.min(1, s.a * born * tw);
-            ctx.drawImage(s.sprite, s.x - sz / 2, s.y - sz / 2, sz, sz);
-        }
-    }
-
     // ---- Xat paytida: sekin yonib-o'chadigan yirik yulduzlar ----
     if (sparklesOn && twinklers.length < 70 && Math.random() < dt * 10) {
         const keys = ['sparkleCyan', 'sparkleWhite', 'sparkleGold', 'sparklePink'];
@@ -1135,7 +1058,7 @@ let rz;
 addEventListener('resize', () => {
     clearTimeout(rz);
     rz = setTimeout(() => {
-        sizeCanvas(); genNebula(); initCosmos(); buildTitle();
+        sizeCanvas(); genNebula(); initCosmos();
         if (loadedImg) buildPortrait(loadedImg, assemble);
     }, 300);
 });
@@ -1144,7 +1067,7 @@ addEventListener('resize', () => {
     genNebula();
     initCosmos();
     try { await Promise.race([document.fonts.load('64px "Great Vibes"'), wait(2500)]); } catch (e) {}
-    buildTitle();
+   
     try {
         loadedImg = await loadImage(CONFIG.rasm);
         buildPortrait(loadedImg);
@@ -1153,7 +1076,7 @@ addEventListener('resize', () => {
         $('startBtn').style.display = 'none';
     }
     // Shriftlar yuklangach matn o'lchamlari o'zgaradi — joylashuvni qayta hisoblaymiz
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { buildTitle(); if (loadedImg && !started) buildPortrait(loadedImg); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (loadedImg && !started) buildPortrait(loadedImg); });
     requestAnimationFrame(animate);
 })();
 </script>
